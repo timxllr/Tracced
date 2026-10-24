@@ -1,0 +1,63 @@
+# --- Secrets & lokale Konfiguration ---
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+*.crt
+
+# --- Python ---
+backend/venv/
+backend/.venv/
+venv/
+.venv/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# --- Datenbanken & Backups ---
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+backups/
+*.bak
+export_*.json
+export_*.csv
+
+# --- Logs & temporäre Dateien ---
+*.log
+logs/
+*.tmp
+*.temp
+*.swp
+*~
+
+# --- Node / Tooling (falls später ergänzt) ---
+node_modules/
+npm-debug.log*
+.yarn/
+.pnpm-store/
+
+# --- Betriebssystem & Editoren ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.iml

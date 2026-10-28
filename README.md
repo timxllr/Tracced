@@ -1,174 +1,169 @@
-# Tracced
+# Tracced – Einrichtung & Bedienung
 
-Tracced ist eine selbst gehostete Webanwendung zum Erfassen, Synchronisieren, Visualisieren und Prognostizieren von Messreihen – zum Beispiel Zählerstände, Verbräuche, Gewicht oder Temperatur.
+Tracced ist eine selbst gehostete Webanwendung zum Erfassen, Synchronisieren, Visualisieren und Prognostizieren von Messreihen – zum Beispiel Zählerstände (Strom, Wasser, Gas, Kilometer), Verbräuche oder persönliche Messwerte wie Gewicht oder Temperatur.
 
-Die Anwendung ist bewusst schlank: kein Docker, kein Frontend-Build, keine Node.js-Abhängigkeit. Das Backend läuft mit Python und PostgreSQL (für Entwicklung und Tests auch mit SQLite), das Frontend besteht aus statischem HTML, CSS und nativen JavaScript-Modulen.
+Dieses Dokument führt dich durch das erste Setup auf einem Ubuntu VPS (Beispiel: Hetzner) und fasst danach die wichtigsten Konfigurations- und Betriebsinformationen zusammen.
 
-## Funktionen
+---
 
-### Benutzer & Anmeldung
-- Geschlossenes System ohne öffentliche Registrierung
-- Benutzeranlage über die Server-CLI
-- Login, Logout und Sitzungsstatus
-- Argon2id-Passwort-Hashing
-- HttpOnly-Session-Cookies mit SameSite-Schutz
-- CSRF-Schutz bei allen schreibenden Anfragen
-- Strikte Benutzertrennung auf Datenbankebene
+## 1. Voraussetzungen
 
-### Messreihen
-- Anlegen, Anzeigen, Bearbeiten und Löschen
-- Zwei Typen: fortlaufender Zählerstand und diskrete Messung
-- Name, Einheit, Beschreibung und Typ pro Messreihe
-- Eindeutige Namen pro Benutzer
-- Optionale Ganzzahl-Anzeige: Nachkommastellen lassen sich pro Reihe ein- und ausschalten
-- Umschalten auch bei bereits bestehenden Messreihen möglich
+- Ubuntu-Server (z. B. Hetzner VPS)
+- Nginx und Nginx Proxy Manager sind bereits installiert und erreichbar
+- SSL-Zertifikate werden über den Nginx Proxy Manager verwaltet (keine Certbot-Befehle nötig)
+- PostgreSQL-Datenbank ist verfügbar oder kann lokal installiert werden
 
-### Messwerte
-- Erfassen, Korrigieren und Löschen einzelner Messwerte
-- Zeitstempel, Wert und optionale Notiz
-- Chronologische Sortierung und Anzeige des jeweils letzten Werts
-- Ganzzahl-Modus blendet Nachkommastellen in Tabelle, Dashboard, Diagramm und Prognose aus
+> Erstelle den Projektordner am gewünschten Ort (Beispiel: `/home/tracced`) bevor du mit Schritt 2 beginnst.
 
-### Visualisierung
-- Dashboard mit allen Messreihen, aktuellem Wert und Anzahl der Einträge
-- Detailansicht mit Messwerttabelle
-- Interaktives Liniendiagramm auf Canvas-Basis, ohne externe Chart-Bibliothek
-- Responsives Layout und PWA-Manifest
+---
 
-### Prognosen
-Serverseitige Berechnung für fünf Horizonte:
-- 30 Tage
-- 60 Tage
-- 90 Tage
-- 6 Kalendermonate inklusive Monatsende- und Schaltjahr-Regel
-- 365 Tage
+## 2. Installation (nur Befehle)
 
-Je nach Reihentyp:
-- **Zählerstände:** tägliche Verbrauchsrate, Erkennung von Zählerwechseln und Rücksetzungen
-- **Diskrete Messungen:** lineare Regression (OLS) inklusive Bestimmtheitsmaß R²
-
-Jede Prognose enthält eine Qualitätskennzeichnung mit Hinweisen zu geringer Datenbasis, starken Schwankungen oder erkannten Zählerwechseln.
-
-### Konsistenz & Synchronisation
-- Optimistic Concurrency Control über `updated_at`
-- Konflikterkennung mit HTTP 409, wenn ein Datensatz zwischenzeitlich auf einem anderen Gerät geändert wurde
-- Automatischer Abgleich der aktuellen Ansicht beim Zurückkehren in den Browser-Tab
-- Synchronisationsanzeige im Kopfbereich der Anwendung
-
-### Backup & Wiederherstellung
-- Vollständiger JSON-Export mit stabilen UUIDs
-- CSV-Export für Tabellenkalkulationen (UTF-8 mit BOM, Semikolon-getrennt)
-- Vorab-Validierung einer Importdatei mit detailliertem Prüfbericht
-- Atomarer Import: entweder vollständig erfolgreich oder vollständiger Rollback
-- Zwei Importmodi: Zusammenführen (Merge) oder vollständiges Ersetzen (Replace)
-- Schutz vor Duplikaten und Datenverlust
-
-### Betrieb
-- Automatische Erstellung des Datenbankschemas beim Start
-- Einfache, idempotente Schema-Erweiterung für neue Spalten
-- Healthcheck unter `/health`
-- Interaktive API-Dokumentation unter `/docs`
-- Vorlagen für systemd und Nginx unter `deploy/`
-
-## Technik
-
-| Bereich | Verwendet |
-| --- | --- |
-| Backend | Python, FastAPI, SQLAlchemy (async), Pydantic |
-| Datenbank | PostgreSQL (Produktion), SQLite (Entwicklung und Tests) |
-| Authentifizierung | Argon2id, HMAC-signierte Session-Tokens, CSRF-Token |
-| Frontend | HTML5, CSS-Variablen, native JavaScript-ES-Module, Canvas |
-| Deployment | Uvicorn, systemd, Nginx bzw. Nginx Proxy Manager |
-
-## Projektstruktur
-
-```text
-Tracced/
-├── backend/
-│   ├── app/
-│   │   ├── api/            # Auth-, Reihen-, Messwert-, Prognose- und Backup-Routen
-│   │   ├── services/       # Prognose- und Backup-Logik
-│   │   ├── auth.py         # Passwort-Hashing, Sessions und CSRF
-│   │   ├── config.py       # Konfiguration über Umgebungsvariablen
-│   │   ├── database.py     # Async-Engine und Datenbanksitzungen
-│   │   ├── models.py       # SQLAlchemy-Modelle
-│   │   ├── schemas.py      # Pydantic-Ein- und Ausgabeschemata
-│   │   ├── cli.py          # Benutzerverwaltung und Datenbank-Initialisierung
-│   │   └── main.py         # FastAPI-App, statisches Frontend, Schema-Upgrades
-│   ├── tests/              # Pytest-Suite mit SQLite In-Memory
-│   ├── requirements.txt
-│   └── pytest.ini
-├── frontend/
-│   ├── css/                # Design-Tokens und Layout
-│   ├── js/                 # API-Client, Routing, Diagramme und Ansichten
-│   ├── index.html
-│   └── manifest.json
-├── deploy/
-│   ├── nginx/              # Nginx-VirtualHost
-│   └── systemd/            # systemd-Service
-├── .env.example
-└── AGENTS.md               # Hinweise für KI-Agenten
-```
-
-## Lokaler Start
-
-### 1. Backend vorbereiten
+### 2.1 Projekt klonen
 
 ```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+git clone <DEIN_GIT_REPO> /home/tracced && cd /home/tracced
 ```
 
-### 2. Konfiguration anlegen
+### 2.2 Konfiguration (.env) anpassen
 
-```bash
-cp ../.env.example .env
-```
-
-Für einen schnellen lokalen Test ohne PostgreSQL genügt in `backend/.env`:
+Die Konfigurationsdatei liegt bereits unter `backend/.env`. Öffne sie und trage deine Werte ein:
 
 ```ini
-DATABASE_URL=sqlite+aiosqlite:///./tracced.db
+DATABASE_URL=postgresql+asyncpg://tracced_user:<DEIN_DB_PASSWORT>@127.0.0.1:5432/tracced_db
+SECRET_KEY=<DEIN_SECRETER_KEY>
+APP_ENV=production
+DEBUG=false
+HOST=0.0.0.0
+PORT=8000
+ALLOWED_ORIGINS=https://<DEINE_DOMAIN.de>
+SECURE_COOKIES=true
 ```
 
-Für PostgreSQL die Verbindung entsprechend anpassen:
+SECRET_KEY erzeugen:
+
+```bash
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Dann Berechtigungen setzen und Python-Pakete installieren:
+
+```bash
+cd /home/tracced/backend && chmod 600 .env && pip3 install --break-system-packages --ignore-installed -r requirements.txt
+```
+
+> Hinweis: Unter aktuellen Ubuntu/Debian-Versionen ist Python extern verwaltet (PEP 668). Deshalb werden `--break-system-packages` und `--ignore-installed` benötigt, wenn keine virtuelle Umgebung verwendet werden soll. `--ignore-installed` verhindert, dass pip versucht, von Debian vorinstallierte Pakete zu deinstallieren (diese haben keine RECORD-Datei). Ein `pip3 install --upgrade pip` wird nicht empfohlen.
+
+### 2.3 Datenbank anlegen
+
+```bash
+sudo -u postgres psql -c "CREATE USER tracced_user WITH PASSWORD '<DEIN_DB_PASSWORT>';"
+sudo -u postgres createdb -O tracced_user tracced_db
+```
+
+### 2.4 systemd-Service einrichten & starten
+
+```bash
+sudo sed -i "s|/var/www/tracced|/home/tracced|g; s|User=www-data|User=$USER|g; s|Group=www-data|Group=$USER|g; s|venv/bin/||g; s|--host 127.0.0.1|--host 0.0.0.0|g; /ProtectHome=true/d" deploy/systemd/tracced.service
+sudo cp deploy/systemd/tracced.service /etc/systemd/system/tracced.service
+sudo systemctl daemon-reload && sudo systemctl enable --now tracced
+```
+
+Status prüfen:
+
+```bash
+sudo systemctl status tracced --no-pager
+```
+
+### 2.5 Ersten Benutzer anlegen
+
+```bash
+cd /home/tracced/backend && python3 -m app.cli create-user --email <DEINE_EMAIL> --password "<DEIN_PASSWORT>"
+```
+
+### 2.6 Nginx Proxy Manager einrichten
+
+In der Nginx Proxy Manager-Oberfläche einen Proxy-Host anlegen:
+
+| Einstellung | Wert |
+|-------------|------|
+| Domain | `<DEINE_DOMAIN.de>` |
+| Ziel | `http://<BRIDGE-IP-DES-HOSTS>:8000` |
+| Scheme | `http` |
+| SSL | Zertifikat über Nginx Proxy Manager ausstellen / verknüpfen |
+| Websockets support | Aktivieren (empfohlen) |
+
+> **Wichtig bei Docker:** Wenn der Nginx Proxy Manager in einem Docker-Container läuft, ist `127.0.0.1` aus Container-Sicht der Container selbst, **nicht** der VPS-Host. Trage stattdessen die Docker-Bridge-IP des VPS-Hosts ein.
+>
+> Bridge-IP auf dem VPS herausfinden:
+> ```bash
+> ip addr show | grep "inet 172"
+> ```
+> (z. B. `172.20.0.1`, `172.17.0.1`, `172.19.0.1` …)
+>
+> Beispiel für das Ziel im NPM: `http://172.20.0.1:8000`
+
+---
+
+## 3. Port abweichen von 8000
+
+Ja, ein anderer Port ist möglich. Du musst den Port an **zwei Stellen** konsistent ändern, damit systemd/Uvicorn und der Nginx Proxy Manager zusammenpassen.
+
+**Beispiel: Port 8080**
+
+### 3.1 `backend/.env` anpassen
 
 ```ini
-DATABASE_URL=postgresql+asyncpg://tracced_user:passwort@127.0.0.1:5432/tracced_db
+PORT=8080
 ```
 
-### 3. Benutzer anlegen
+### 3.2 systemd-Service anpassen
+
+In `deploy/systemd/tracced.service` den Port im `ExecStart` ändern:
+
+```ini
+ExecStart=uvicorn app.main:app --host 0.0.0.0 --port 8080 --workers 2
+```
+
+*(Pfad entsprechend deiner Installation anpassen.)*
+
+### 3.3 systemd neu laden & neu starten
 
 ```bash
-python -m app.cli create-user --email benutzer@example.com --password "DeinSicheresPasswort"
+sudo systemctl daemon-reload && sudo systemctl restart tracced
 ```
 
-### 4. Server starten
+### 3.4 Nginx Proxy Manager anpassen
+
+Im Nginx Proxy Manager das Ziel des Proxy-Hosts auf `<BRIDGE-IP-DES-HOSTS>:8080` ändern (statt `127.0.0.1:8000`). Siehe Hinweis in Schritt 2.6 zu Docker und Bridge-IP.
+
+> Wichtig: Die `PORT`-Variable in der `.env` und der `--port`-Wert im systemd-Service sollten übereinstimmen.
+
+---
+
+## 4. Fertig – Aufruf & Login
+
+Aufruf: `https://<DEINE_DOMAIN.de>`  
+Login mit dem Benutzer aus Schritt 2.5.
+
+Es gibt **keine öffentliche Registrierung**. Weitere Benutzer werden nur über die CLI angelegt:
 
 ```bash
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+cd /home/tracced/backend && python3 -m app.cli create-user --email <NEUE_EMAIL> --password "<NEUES_PASSWORT>"
 ```
 
-Danach sind erreichbar:
+---
 
-- Anwendung: `http://127.0.0.1:8000`
-- API-Dokumentation: `http://127.0.0.1:8000/docs`
-- Healthcheck: `http://127.0.0.1:8000/health`
-
-Wichtig: Befehle immer aus dem Verzeichnis `backend/` ausführen, da `.env` und die relative SQLite-Datei vom Arbeitsverzeichnis abhängen.
-
-## Konfiguration
+## 5. Konfiguration
 
 Die Konfiguration erfolgt über `backend/.env` oder Umgebungsvariablen:
 
 | Variable | Bedeutung | Standard |
-| --- | --- | --- |
+|----------|-----------|----------|
 | `DATABASE_URL` | SQLAlchemy-Verbindungs-URL | lokale PostgreSQL-Datenbank |
 | `SECRET_KEY` | Schlüssel für Session-Tokens | unsicherer Entwicklungswert |
 | `SESSION_EXPIRE_DAYS` | Gültigkeit der Sitzung in Tagen | `30` |
-| `SECURE_COOKIES` | Cookies nur über HTTPS | `false` |
+| `SECURE_COOKIES` | Cookies nur über HTTPS | `false` (Produktion: `true`) |
 | `COOKIE_SAMESITE` | SameSite-Attribut (`lax` oder `strict`) | `lax` |
 | `ALLOWED_ORIGINS` | Komma-separierte CORS-Origins | lokale Adressen |
 | `HOST` | Bind-Adresse | `127.0.0.1` |
@@ -176,41 +171,57 @@ Die Konfiguration erfolgt über `backend/.env` oder Umgebungsvariablen:
 | `DEBUG` | SQL-Logging aktivieren | `false` |
 | `APP_ENV` | Laufzeitumgebung | `production` |
 
-Für den Produktivbetrieb unbedingt einen zufälligen `SECRET_KEY` erzeugen und `SECURE_COOKIES=true` setzen:
+Für den Produktivbetrieb unbedingt einen zufälligen `SECRET_KEY` erzeugen und `SECURE_COOKIES=true` setzen.
+
+---
+
+## 6. Funktionen (Überblick)
+
+- **Benutzer & Anmeldung:** Geschlossenes System ohne öffentliche Registrierung, Argon2id-Passwort-Hashing, HttpOnly-Session-Cookies, CSRF-Schutz
+- **Messreihen:** Anlegen, Bearbeiten, Löschen; Zählerstände oder diskrete Messungen; Ganzzahl- oder Dezimalmodus
+- **Messwerte:** Zeitstempel, Wert, Notiz; chronologische Sortierung
+- **Visualisierung:** Dashboard, Detailansicht, interaktives Liniendiagramm (Canvas, ohne externe Bibliothek), PWA
+- **Prognosen:** Serverseitig für 30, 60, 90 Tage, 6 Monate und 365 Tage
+- **Backup & Wiederherstellung:** JSON-/CSV-Export, Import-Validierung, atomarer Import (Merge oder Replace)
+- **Betrieb:** Healthcheck unter `/health`, API-Dokumentation unter `/docs`, automatische Schema-Upgrades beim Start
+
+---
+
+## 7. Betrieb & Wartung
+
+### systemd-Service
 
 ```bash
-python3 -c "import secrets; print(secrets.token_hex(32))"
+sudo systemctl status tracced        # Status prüfen
+sudo systemctl restart tracced       # Neustart nach Änderungen
+sudo systemctl disable --now tracced # Dienst stoppen & deaktivieren
 ```
 
-## Tests
+### Tests
 
 ```bash
-cd backend
-venv/bin/pytest -v
+cd /home/tracced/backend
+pip3 install pytest pytest-asyncio httpx  # falls noch nicht installiert
+python3 -m pytest -v
 ```
 
 Die Tests verwenden eine SQLite-In-Memory-Datenbank und benötigen kein PostgreSQL.
 
-## Deployment
+### Datenbank-Migrationen
 
-Unter `deploy/` liegen Vorlagen für:
+Neue Spalten werden beim Start automatisch über idempotente Schema-Upgrades ergänzt. Bestehende Daten bleiben erhalten. Es ist nicht nötig, Tabellen manuell zu migrieren.
 
-- `deploy/systemd/tracced.service` – Uvicorn-Dienst mit Härtung
-- `deploy/nginx/tracced.conf` – HTTPS-Reverse-Proxy und Auslieferung des Frontends
+### Logs
 
-Ablauf in Kurzform:
+```bash
+sudo journalctl -u tracced -f
+```
 
-1. Projekt auf den Server übertragen (ohne `venv`, `.env` und lokale Datenbank).
-2. PostgreSQL-Datenbank und Benutzer anlegen.
-3. Virtuelle Umgebung erstellen und Abhängigkeiten installieren.
-4. `backend/.env` mit produktiven Werten anlegen.
-5. Benutzer per CLI erstellen.
-6. systemd-Service aktivieren.
-7. Nginx bzw. Nginx Proxy Manager auf `127.0.0.1:8000` zeigen lassen.
+---
 
-## Hinweise
+## 8. Hinweise & Sicherheit
 
-- Es gibt keine offene Registrierung. Neue Konten werden ausschließlich über die CLI angelegt.
-- Neue Datenbankspalten werden beim Start automatisch ergänzt; bestehende Daten bleiben erhalten.
-- Das Frontend wird ohne Build-Schritt direkt vom Backend bzw. von Nginx ausgeliefert.
-- Die Anwendung ist für den Betrieb hinter HTTPS und einen Reverse-Proxy ausgelegt.
+- Geheimnisse (`.env`, Datenbank-Passwörter) niemals ins Repository committen.
+- Die Anwendung ist für den Betrieb hinter HTTPS und einem Reverse-Proxy ausgelegt.
+- CSRF- und Eigentümerprüfungen sind auf allen schreibenden API-Endpunkten aktiv.
+- Lokale SQLite-Dateien, virtuelle Umgebungen und `.env` werden über `.gitignore` ausgeschlossen.

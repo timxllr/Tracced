@@ -145,6 +145,45 @@ class SeriesForecastReport(BaseModel):
     forecasts: List[ForecastResult]
 
 
+# --- CSV Import pro Messreihe ---
+class CsvColumnMapping(BaseModel):
+    timestamp_col: int = Field(description="Nullbasierter Spaltenindex für den Zeitstempel")
+    value_col: int = Field(description="Nullbasierter Spaltenindex für den Messwert")
+    note_col: Optional[int] = Field(default=None, description="Nullbasierter Spaltenindex für die Notiz (optional)")
+
+
+class CsvImportRequest(BaseModel):
+    csv_data: str = Field(description="Roh-CSV-Inhalt als Text")
+    delimiter: str = Field(default=";", description="Trennzeichen (z.B. ';', ',', TAB)")
+    has_header: bool = Field(default=True, description="Erste Zeile ist Kopfzeile und wird übersprungen")
+    column_mapping: CsvColumnMapping
+    mode: str = Field(default="merge", pattern="^(merge|replace)$", description="merge = ergänzen, replace = bestehende Werte der Reihe löschen")
+
+
+class CsvImportPreviewRow(BaseModel):
+    row_number: int
+    timestamp: str
+    value: str
+    note: Optional[str] = None
+    valid: bool
+    error: Optional[str] = None
+
+
+class CsvImportValidationReport(BaseModel):
+    total_rows: int
+    valid_rows: int
+    invalid_rows: int
+    preview: List[CsvImportPreviewRow]
+    errors: List[str] = []
+
+
+class CsvImportExecutionResult(BaseModel):
+    status: str
+    message: str
+    readings_imported: int
+    readings_skipped: int
+
+
 # --- Backup & Import ---
 class BackupReadingItem(BaseModel):
     id: Optional[uuid.UUID] = None

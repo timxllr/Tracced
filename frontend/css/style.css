@@ -593,14 +593,13 @@ body {
     justify-content: center;
   }
 
-  .btn-icon [data-lucide] {
-    width: 20px;
-    height: 20px;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    display: block;
+  .btn-icon {
+    width: 56px;
+    padding: 0.9rem 0;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .series-grid {

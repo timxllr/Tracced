@@ -25,17 +25,11 @@ export function renderSeriesDetail(container, seriesId, navigate) {
             </p>
           </div>
           <div class="btn-group">
-            <button id="btn-add-reading" class="btn btn-primary btn-icon">
-              <i data-lucide="plus"></i>
-            </button>
+            <button id="btn-add-reading" class="btn btn-primary btn-icon">+</button>
             <button id="btn-import-readings" class="btn btn-secondary">Import</button>
             <button id="btn-view-forecast" class="btn btn-secondary">Prognose</button>
-            <button id="btn-edit-series" class="btn btn-secondary btn-icon">
-              <i data-lucide="edit-2"></i>
-            </button>
-            <button id="btn-delete-series" class="btn btn-danger btn-icon">
-              <i data-lucide="trash-2"></i>
-            </button>
+            <button id="btn-edit-series" class="btn btn-secondary btn-icon">✎</button>
+            <button id="btn-delete-series" class="btn btn-danger btn-icon">×</button>
           </div>
         </div>
 
@@ -99,10 +93,6 @@ export function renderSeriesDetail(container, seriesId, navigate) {
       setTimeout(() => {
         renderLineChart('series-canvas', series.readings, series.unit, { decimals: series.allow_decimals !== false });
       }, 50);
-
-      if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-      }
 
     } catch (err) {
       container.innerHTML = `

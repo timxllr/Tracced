@@ -8,13 +8,8 @@ export function renderDashboard(container, navigate) {
         <p style="color: var(--text-muted); font-size: 0.9rem;">Zentrale Erfassung und Synchronisation</p>
       </div>
       <div class="btn-group">
-        <button id="btn-new-series" class="btn btn-primary btn-icon">
-          <i data-lucide="plus"></i>
-        </button>
-        <button id="btn-backup-view" class="btn btn-secondary">
-          <i data-lucide="save" style="margin-right: 6px;"></i>
-          Backup
-        </button>
+        <button id="btn-new-series" class="btn btn-primary btn-icon">+</button>
+        <button id="btn-backup-view" class="btn btn-secondary">Backup</button>
       </div>
     </div>
 
@@ -35,10 +30,7 @@ export function renderDashboard(container, navigate) {
           <div style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 4rem 1rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px dashed var(--border-color);">
             <h3 style="color: var(--text-main); margin-bottom: 0.5rem;">Noch keine Messreihen vorhanden</h3>
             <p style="margin-bottom: 1.5rem;">Erstelle deine erste Messreihe (z.B. Stromzähler oder Gewicht), um Werte zu erfassen.</p>
-            <button id="btn-empty-new" class="btn btn-primary btn-icon">
-              <i data-lucide="plus"></i>
-              Neue Messreihe
-            </button>
+            <button id="btn-empty-new" class="btn btn-primary btn-icon">+ Neue Messreihe</button>
           </div>
         `;
         document.getElementById('btn-empty-new')?.addEventListener('click', () => showSeriesModal(null, () => loadSeries()));
@@ -78,10 +70,6 @@ export function renderDashboard(container, navigate) {
           navigate('series-detail', { id: card.getAttribute('data-id') });
         });
       });
-
-      if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-      }
     } catch (err) {
       listEl.innerHTML = `<div style="color: var(--sync-error); grid-column: 1/-1; text-align: center;">Fehler beim Laden: ${escapeHtml(err.message)}</div>`;
     }

@@ -4,7 +4,7 @@ export function renderBackup(container, navigate) {
   container.innerHTML = `
     <div class="view-toolbar">
       <div>
-        <button id="btn-back-dash" class="btn btn-secondary" style="margin-bottom: 0.5rem; font-size: 0.8rem;">&larr; Zurück zum Dashboard</button>
+        <button id="btn-back-dash" class="btn btn-secondary" style="margin-bottom: 0.5rem; font-size: 0.8rem;">&larr; Zurück</button>
         <h1 class="view-title">Datensicherung & Import</h1>
         <p style="color: var(--text-muted); font-size: 0.9rem;">Vollständiger Datenexport und atomarer Import</p>
       </div>

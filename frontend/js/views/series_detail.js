@@ -18,18 +18,24 @@ export function renderSeriesDetail(container, seriesId, navigate) {
       container.innerHTML = `
         <div class="view-toolbar">
           <div>
-            <button id="btn-back" class="btn btn-secondary" style="margin-bottom: 0.5rem; font-size: 0.8rem;">&larr; Zurück zur Übersicht</button>
+            <button id="btn-back" class="btn btn-secondary" style="margin-bottom: 0.5rem; font-size: 0.8rem;">&larr; Übersicht</button>
             <h1 class="view-title">${escapeHtml(series.name)}</h1>
             <p style="color: var(--text-muted); font-size: 0.9rem;">
               Einheit: <strong>${escapeHtml(series.unit)}</strong> &bull; Typ: ${typeLabel}${decimalsLabel}
             </p>
           </div>
           <div class="btn-group">
-            <button id="btn-add-reading" class="btn btn-primary">+ Messwert erfassen</button>
+            <button id="btn-add-reading" class="btn btn-primary btn-icon">
+              <i data-lucide="plus"></i>
+            </button>
             <button id="btn-import-readings" class="btn btn-secondary">Import</button>
-            <button id="btn-view-forecast" class="btn btn-secondary">Prognosen anzeigen</button>
-            <button id="btn-edit-series" class="btn btn-secondary">Bearbeiten</button>
-            <button id="btn-delete-series" class="btn btn-danger">Löschen</button>
+            <button id="btn-view-forecast" class="btn btn-secondary">Prognose</button>
+            <button id="btn-edit-series" class="btn btn-secondary btn-icon">
+              <i data-lucide="edit-2"></i>
+            </button>
+            <button id="btn-delete-series" class="btn btn-danger btn-icon">
+              <i data-lucide="trash-2"></i>
+            </button>
           </div>
         </div>
 
@@ -93,6 +99,10 @@ export function renderSeriesDetail(container, seriesId, navigate) {
       setTimeout(() => {
         renderLineChart('series-canvas', series.readings, series.unit, { decimals: series.allow_decimals !== false });
       }, 50);
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
 
     } catch (err) {
       container.innerHTML = `
@@ -162,7 +172,7 @@ function showReadingModal(series, reading, onSuccess) {
       <form id="reading-form">
         <div class="form-group">
           <label class="form-label">Datum und Uhrzeit</label>
-          <input type="datetime-local" id="reading-ts" class="form-input" required value="${defaultTime}">
+          <input type="datetime-local" id="reading-ts" class="form-input" required value="${defaultTime}" style="max-width: 220px; width: auto;">
         </div>
         <div class="form-group">
           <label class="form-label">Messwert in ${escapeHtml(series.unit)}</label>

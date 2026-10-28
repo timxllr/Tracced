@@ -14,7 +14,7 @@ export function renderForecast(container, seriesId, navigate) {
       container.innerHTML = `
         <div class="view-toolbar">
           <div>
-            <button id="btn-back-detail" class="btn btn-secondary" style="margin-bottom: 0.5rem; font-size: 0.8rem;">&larr; Zurück zur Reihe</button>
+            <button id="btn-back-detail" class="btn btn-secondary" style="margin-bottom: 0.5rem; font-size: 0.8rem;">&larr; Zurück</button>
             <h1 class="view-title">Prognose: ${escapeHtml(report.series_name)}</h1>
             <p style="color: var(--text-muted); font-size: 0.9rem;">
               Bezugsbasis: <strong>${report.readings_considered} Messwerte</strong> über ${report.baseline_days_used} Tage

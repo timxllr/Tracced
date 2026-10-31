@@ -47,7 +47,8 @@ export function renderSeriesDetail(container, seriesId, navigate) {
               <tr>
                 <th>Zeitstempel</th>
                 <th>Messwert (${escapeHtml(series.unit)})</th>
-                <th>Notiz</th>
+                <th style="width: 80px; text-align: center;">Veränderung</th>
+                <th style="text-align: left;">Notiz</th>
                 <th style="text-align: right;">Aktionen</th>
               </tr>
             </thead>
@@ -109,10 +110,24 @@ export function renderSeriesDetail(container, seriesId, navigate) {
 
 function renderReadingsRows(readings, unit, allowDecimals = true) {
   if (!readings || readings.length === 0) {
-    return `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">Noch keine Messwerte vorhanden.</td></tr>`;
+    return `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Noch keine Messwerte vorhanden.</td></tr>`;
   }
 
-  // Neueste zuerst in der Tabelle
+  // Aufsteigend sortieren, um Differenzen zum vorherigen Wert berechnen zu können
+  const ascending = [...readings].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+  // Differenz pro Messwert-ID berechnen (erstes Element: keine Veränderung)
+  const diffMap = new Map();
+  ascending.forEach((r, idx) => {
+    if (idx === 0) {
+      diffMap.set(r.id, null);
+    } else {
+      const prev = ascending[idx - 1];
+      diffMap.set(r.id, parseFloat(r.value) - parseFloat(prev.value));
+    }
+  });
+
+  // Neueste zuerst in der Tabelle anzeigen
   const sorted = [...readings].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   return sorted.map(r => {
@@ -122,11 +137,31 @@ function renderReadingsRows(readings, unit, allowDecimals = true) {
       ? { minimumFractionDigits: 1, maximumFractionDigits: 4 }
       : { maximumFractionDigits: 0 });
 
+    const diff = diffMap.get(r.id);
+    let diffStr = '—';
+    let diffColor = 'var(--text-muted)';
+    if (diff !== null && diff !== undefined) {
+      const diffAbs = Math.abs(diff);
+      const diffValStr = diffAbs.toLocaleString('de-DE', allowDecimals
+        ? { minimumFractionDigits: 1, maximumFractionDigits: 4 }
+        : { maximumFractionDigits: 0 });
+      const sign = diff > 0 ? '+' : diff < 0 ? '−' : '';
+      diffStr = `${sign}${diffValStr} ${escapeHtml(unit)}`;
+      if (diff > 0) {
+        diffColor = 'var(--accent-emerald)';
+      } else if (diff < 0) {
+        diffColor = 'var(--accent-rose)';
+      } else {
+        diffColor = 'var(--accent-amber)';
+      }
+    }
+
     return `
       <tr>
         <td style="font-weight: 500;">${dateStr}</td>
         <td style="font-weight: 700; color: var(--text-main);">${valStr} ${escapeHtml(unit)}</td>
-        <td style="color: var(--text-muted); font-size: 0.85rem;">${escapeHtml(r.note || '—')}</td>
+        <td style="width: 80px; color: ${diffColor}; font-size: 0.85rem; font-weight: 600; text-align: center;">${diffStr}</td>
+        <td style="color: var(--text-muted); font-size: 0.85rem; white-space: pre-wrap; overflow-wrap: break-word;">${escapeHtml(r.note || '—')}</td>
         <td style="text-align: right;">
           <button class="btn btn-secondary btn-edit-reading" data-id="${r.id}" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Bearbeiten</button>
           <button class="btn btn-danger btn-delete-reading" data-id="${r.id}" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Löschen</button>
@@ -198,7 +233,7 @@ function showReadingModal(series, reading, onSuccess) {
     const payload = {
       timestamp: dateObj.toISOString(),
       value: parseFloat(document.getElementById('reading-val').value),
-      note: document.getElementById('reading-note').value.trim() || null
+      note: document.getElementById('reading-note').value.trim()
     };
 
     try {

@@ -78,8 +78,8 @@ function renderForecastCard(f, unit, allowDecimals = true) {
   return `
     <div class="forecast-card">
       <div style="display: flex; justify-content: space-between; align-items: baseline;">
-        <span style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">${escapeHtml(f.horizon_label)}</span>
-        <span style="font-size: 0.75rem; color: var(--text-subtle);">${round(f.duration_days, 1)} Tage</span>
+        <span style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">${escapeHtml(f.horizon_label).replace(/\n/g, '<br>')}</span>
+        <span style="font-size: 0.75rem; color: var(--text-subtle);">${Math.round(f.duration_days)} Tage</span>
       </div>
       <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">Stichtag: ${targetDateStr}</div>
       

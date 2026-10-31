@@ -492,7 +492,7 @@ body {
    ========================================= */
 .forecast-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1rem;
   margin-top: 1rem;
 }
@@ -501,7 +501,10 @@ body {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 1rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .forecast-badge {
@@ -685,7 +688,7 @@ body {
   }
 
   .forecast-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   /* Bottom-Nav auf Tablet ausblenden */
@@ -723,7 +726,7 @@ body {
   }
 
   .forecast-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   /* Bottom-Nav auf Desktop ausblenden */

@@ -7,6 +7,7 @@ from sqlalchemy import (
     String,
     Text,
     Boolean,
+    Integer,
     DateTime,
     Numeric,
     ForeignKey,
@@ -84,6 +85,7 @@ class MeasurementSeries(Base):
     description = Column(Text, nullable=True)
     series_type = Column(String(30), default=SeriesType.DISCRETE_METRIC.value, nullable=False)
     allow_decimals = Column(Boolean, default=True, nullable=False)
+    forecast_baseline_days = Column(Integer, default=90, nullable=False)
     
     created_at = Column(DateTime(timezone=True), default=now_utc, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=now_utc, onupdate=now_utc, nullable=False)

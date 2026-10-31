@@ -73,6 +73,7 @@ class SeriesBase(BaseModel):
     description: Optional[str] = Field(default=None, max_length=2000)
     series_type: SeriesType = Field(default=SeriesType.DISCRETE_METRIC)
     allow_decimals: bool = Field(default=True, description="Nachkommastellen erlauben (False = nur Ganzzahlen anzeigen)")
+    forecast_baseline_days: int = Field(default=90, ge=1, le=365, description="Referenzzeitraum für Prognose in Tagen (1–365)")
 
 
 class SeriesCreate(SeriesBase):
@@ -85,6 +86,7 @@ class SeriesUpdate(BaseModel):
     description: Optional[str] = None
     series_type: Optional[SeriesType] = None
     allow_decimals: Optional[bool] = None
+    forecast_baseline_days: Optional[int] = Field(default=None, ge=1, le=365, description="Referenzzeitraum für Prognose in Tagen (1–365)")
     expected_updated_at: datetime = Field(
         description="Zeitstempel von updated_at zur Prüfung auf Optimistic Concurrency"
     )
@@ -203,6 +205,7 @@ class BackupSeriesItem(BaseModel):
     description: Optional[str] = None
     series_type: SeriesType
     allow_decimals: bool = True
+    forecast_baseline_days: int = 90
     readings: List[BackupReadingItem] = []
 
 

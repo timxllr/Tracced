@@ -24,6 +24,10 @@ def _apply_schema_upgrades(connection):
         connection.execute(text(
             f"ALTER TABLE measurement_series ADD COLUMN allow_decimals BOOLEAN NOT NULL DEFAULT {default}"
         ))
+    if "forecast_baseline_days" not in columns:
+        connection.execute(text(
+            "ALTER TABLE measurement_series ADD COLUMN forecast_baseline_days INTEGER NOT NULL DEFAULT 90"
+        ))
 
 
 @asynccontextmanager

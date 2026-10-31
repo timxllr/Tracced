@@ -49,6 +49,7 @@ async def export_json_backup(user_id: uuid.UUID, db: AsyncSession) -> BackupPayl
             description=s.description,
             series_type=SeriesType(s.series_type) if s.series_type in [t.value for t in SeriesType] else SeriesType.DISCRETE_METRIC,
             allow_decimals=s.allow_decimals,
+            forecast_baseline_days=s.forecast_baseline_days,
             readings=[
                 BackupReadingItem(
                     id=r.id,
@@ -255,7 +256,8 @@ async def execute_atomic_import(
                     unit=s_item.unit.strip(),
                     description=s_item.description,
                     series_type=s_item.series_type.value if hasattr(s_item.series_type, "value") else str(s_item.series_type),
-                    allow_decimals=s_item.allow_decimals
+                    allow_decimals=s_item.allow_decimals,
+                    forecast_baseline_days=s_item.forecast_baseline_days
                 )
                 db.add(series)
                 await db.flush()

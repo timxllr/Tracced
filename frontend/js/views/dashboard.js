@@ -115,6 +115,21 @@ export function showSeriesModal(series, onSuccess) {
           </p>
         </div>
         <div class="form-group">
+          <label class="form-label">Referenzzeitraum für Prognose</label>
+          <select id="series-baseline-months" class="form-select">
+            <option value="0.5" ${isEdit && Math.round(series.forecast_baseline_days / 30 * 2) / 2 === 0.5 ? 'selected' : ''}>0,5 Monat</option>
+            <option value="1" ${isEdit && Math.round(series.forecast_baseline_days / 30 * 2) / 2 === 1 ? 'selected' : ''}>1 Monat</option>
+            <option value="2" ${isEdit && Math.round(series.forecast_baseline_days / 30 * 2) / 2 === 2 ? 'selected' : ''}>2 Monate</option>
+            <option value="3" ${isEdit && Math.round(series.forecast_baseline_days / 30 * 2) / 2 === 3 ? 'selected' : ''}>3 Monate</option>
+            <option value="6" ${isEdit && Math.round(series.forecast_baseline_days / 30 * 2) / 2 === 6 ? 'selected' : ''}>6 Monate</option>
+            <option value="9" ${isEdit && Math.round(series.forecast_baseline_days / 30 * 2) / 2 === 9 ? 'selected' : ''}>9 Monate</option>
+            <option value="12" ${isEdit && Math.round(series.forecast_baseline_days / 30 * 2) / 2 === 12 ? 'selected' : ''}>12 Monate</option>
+          </select>
+          <p style="margin-top: 0.35rem; font-size: 0.8rem; color: var(--text-muted);">
+            Zeitraum der historischen Messwerte, der für die Prognoseberechnung herangezogen wird. Standard: 3 Monate.
+          </p>
+        </div>
+        <div class="form-group">
           <label class="form-label">Optionale Beschreibung</label>
           <textarea id="series-desc" class="form-textarea" rows="2" placeholder="Zusatzinformationen...">${isEdit ? escapeHtml(series.description || '') : ''}</textarea>
         </div>
@@ -143,6 +158,7 @@ export function showSeriesModal(series, onSuccess) {
       unit: document.getElementById('series-unit').value.trim(),
       series_type: document.getElementById('series-type').value,
       allow_decimals: document.getElementById('series-decimals').checked,
+      forecast_baseline_days: Math.round(parseFloat(document.getElementById('series-baseline-months').value) * 30),
       description: document.getElementById('series-desc').value.trim() || null
     };
 

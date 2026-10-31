@@ -39,6 +39,6 @@ async def get_forecast(
         unit=series.unit,
         readings=series.readings,
         allow_decimals=series.allow_decimals,
-        baseline_days_limit=90
+        baseline_days_limit=series.forecast_baseline_days
     )
     return report

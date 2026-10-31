@@ -51,6 +51,7 @@ async def list_series(
             description=s.description,
             series_type=s.series_type,
             allow_decimals=s.allow_decimals,
+            forecast_baseline_days=s.forecast_baseline_days,
             created_at=s.created_at,
             updated_at=s.updated_at,
             readings_count=count,
@@ -99,6 +100,7 @@ async def create_series(
         description=new_series.description,
         series_type=new_series.series_type,
         allow_decimals=new_series.allow_decimals,
+        forecast_baseline_days=new_series.forecast_baseline_days,
         created_at=new_series.created_at,
         updated_at=new_series.updated_at,
         readings_count=0,
@@ -132,6 +134,7 @@ async def get_series_detail(
         description=series.description,
         series_type=series.series_type,
         allow_decimals=series.allow_decimals,
+        forecast_baseline_days=series.forecast_baseline_days,
         created_at=series.created_at,
         updated_at=series.updated_at,
         readings_count=len(readings),
@@ -197,6 +200,8 @@ async def update_series(
         series.series_type = payload.series_type.value if hasattr(payload.series_type, "value") else str(payload.series_type)
     if payload.allow_decimals is not None:
         series.allow_decimals = payload.allow_decimals
+    if payload.forecast_baseline_days is not None:
+        series.forecast_baseline_days = payload.forecast_baseline_days
         
     series.updated_at = datetime.now(timezone.utc)
     await db.commit()
@@ -217,6 +222,7 @@ async def update_series(
         description=series.description,
         series_type=series.series_type,
         allow_decimals=series.allow_decimals,
+        forecast_baseline_days=series.forecast_baseline_days,
         created_at=series.created_at,
         updated_at=series.updated_at,
         readings_count=count,
